@@ -1,0 +1,23 @@
+---
+title: "ST558 - Project 2 - Shiny App - Kyra Kapsaskis"
+author: "Kyra Kapsaskis"
+format: html
+editor: visual
+---
+
+## 
+
+```{r}
+library(httr)
+library(jsonlite)
+```
+
+My API Key: gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ
+
+```{r}
+GET("https://api.nal.usda.gov/fdc/v1/foods/list?api_key=DEMO_KEY")
+```
+```{r}
+GET("https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&query=Cheddar%20Cheese")
+```
+
