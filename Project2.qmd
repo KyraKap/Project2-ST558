@@ -5,6 +5,9 @@ format: html
 editor: visual
 ---
 
+
+
+
 ```{r}
 library(httr)
 library(jsonlite)
@@ -70,5 +73,41 @@ URL
 
 ```{r}
 get_sunrise_sunset(35.913200, -79.055847, 2024-07-07)
+```
+
+# Shiny App
+
+```{r}
+shinyUI(fluidPage(
+  
+  # Application title
+  uiOutput("Finding the time of Sunrise and Sunset"),
+  
+  # Sidebar with options for the data set
+  sidebarLayout(
+    sidebarPanel(
+      h3("Select the mammal's biological order:"),
+      selectizeInput("vore", "Vore", selected = "omni", choices = levels(as.factor(msleep$vore))),
+      br(),
+      sliderInput("size", "Size of Points on Graph",
+                  min = 1, max = 10, value = 5, step = 1),
+      checkboxInput("conservation", h4("Color Code Conservation Status", style = "color:red;")),
+      conditionalPanel("input.conservation", checkboxInput("alpha", h5("Also change symbol based on REM sleep?")))
+    ),
+    
+    # Show outputs
+    mainPanel(
+      plotOutput("sleepPlot"),
+      textOutput("info"),
+      tableOutput("table")
+      )
+  )
+))
+```
+
+
+```{r}
+# Run the Shiny app
+shinyApp(ui, server)
 ```
 
