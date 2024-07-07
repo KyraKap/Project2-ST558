@@ -39,12 +39,24 @@ ex_info <- as_tibble(parsed$results)
 ex_info
 ```
 
+```{r}
+StartDate<-"2024-01-01"
+EndDate<- "2024-12-31"
+dates<-seq(as.POSIXct(StartDate, format="%Y-%m-%d"), as.POSIXct(EndDate, format="%Y-%m-%d"), by='days')
+```
+
+```{r}
+for (f in as.list(dates)){
+ print(str(f))
+}
+```
+
 
 ```{r}
 
 # Example function
 
-get_sunrise_sunset <- function(latitude, longitude, date){
+get_sunrise_sunset <- function(latitude, longitude, date, tzid){
   URL <- paste("https://api.sunrise-sunset.org/json",
     "?lat=",
     # in decimal degrees
@@ -55,6 +67,9 @@ get_sunrise_sunset <- function(latitude, longitude, date){
     "&date=",
     # Date in YYYY-MM-DD format
     date,
+    "&tzid=",
+    # Specified Time Zone that you can find here https://www.php.net/manual/en/timezones.php
+    tzid,
     sep = "")
   myData <- GET(URL)
   parsed <- myData$content |>
@@ -72,8 +87,37 @@ URL
 
 
 ```{r}
-get_sunrise_sunset(35.913200, -79.055847, 2024-07-07)
+chapel_hill_data <- get_sunrise_sunset(35.913200, -79.055847, 2024-07-07, "America/New_York")
 ```
+```{r}
+chapel_hill_data
+```
+
+
+
+```{r}
+Paris <- get_sunrise_sunset(48.864716, 2.349014, 2024-07-07)
+Athens
+Tokyo
+Oslo
+NYC
+BuenosAires
+Cairo
+NewDelhi
+Beijing
+Bangkok
+Moscow
+Lisbon
+
+```
+```{r}
+Paris
+```
+
+
+
+
+
 
 # Shiny App
 

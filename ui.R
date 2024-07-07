@@ -5,8 +5,14 @@ ui <- fluidPage(
 
     tabsetPanel(
       tabPanel("About", "contents"),
-      tabPanel("Data Download", "contents"),
+      tabPanel("Data Download", "contents", dateInput("date 1", label = "INSERT DATE HERE", format = "yyyy-mm-dd"), varSelectInput(
+        "variable1",
+        label = "data for my location",
+        chapel_hill_data$sunrise),
+        ),
       tabPanel("Data Exploration", "contents"),
+      
+  
   )
 )
 
