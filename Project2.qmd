@@ -5,9 +5,6 @@ format: html
 editor: visual
 ---
 
-## 
-
-
 
 ```{r}
 library(httr)
@@ -22,93 +19,119 @@ library(ggplot2)
 ```
 
 ```{r}
-# simplifying the code above
-packages_needed <- c("httr", "jsonlite", "tidyr", "shinydashboard", "DT", "shiny", "caret", "dplyr", "ggplot2")
-
-#library...
-```
-
-
-
-# Using the FOODS API from the .gov database
-## This API has 4 different endpoints. I need to build a URL for each endpoint
-
-My API Key: gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ
-
-```{r}
-my_api_key <- "gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ"
-```
-
-
-First endpoint fetches details for one food item by FDC ID
-
-```{r}
-URL_friedrice <- "https://api.nal.usda.gov/fdc/v1/food/36602?api_key=DEMO_KEY"
-```
-
-
-```{r}
-friedrice_info <- GET(URL_friedrice)
-str(friedrice_info, max.level = 1)
-```
-
-## Need to parse this a bit. 
-
-```{r}
-parsed <- fromJSON(rawToChar(friedrice_info$content)) 
-friedrice_data <- as_tibble(parsed$data) 
-friedrice_data
-```
-
-
-
-
-
-
-
-
-
-
-```{r}
-GET("https://api.nal.usda.gov/fdc/v1/foods/list?api_key=gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ")
-```
-```{r}
-myData <- GET("https://api.nal.usda.gov/fdc/v1/foods/search?api_key=gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ&query=Cheddar%20Cheese")
+URL_base <- "https://api.sunrise-sunset.org/json"
 ```
 
 ```{r}
-parsed <- fromJSON(rawToChar(id_info$content)) 
-team_info <- as_tibble(parsed$data) 
-team_info
-```
-
-
-```{r}
-parsed <- myData$content |>
-  rawToChar() |>
-  fromJSON()
-str(parsed, max.level = 1)
+base_info <- GET(URL_base)
+str(base_info, max.level = 1)
 ```
 
 ```{r}
-parsed$foods |>
-as_tibble()
+URL_example <- "https://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400"
 ```
 
 ```{r}
-get_foods <- function(title, time, key){
-  URL <- paste("https://newsapi.org/v2/everything?q=",
-  title,
-  "&from=",
-  time,
-  "&language=en&apiKey=",
-  key,
-  sep = "")
-  GET(URL)$content |>
-  rawToChar() |>
-  fromJSON() |>
-  pluck("articles") |>
+example_info <- GET(URL_example)
+str(example_info, max.level = 1)
+```
+
+```{r}
+parsed <- fromJSON(rawToChar(example_info$content)) 
+ex_info <- as_tibble(parsed$results) 
+ex_info
+```
+
+```{r}
+parsed$times |>
   as_tibble()
-}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+# ```{r}
+# # simplifying the code above
+# packages_needed <- c("httr", "jsonlite", "tidyr", "shinydashboard", "DT", "shiny", "caret", "dplyr", "ggplot2")
+# 
+# #library...
+# ```
+# 
+# 
+# 
+# # Using the FOODS API from the .gov database
+# ## This API has 4 different endpoints. I need to build a URL for each endpoint
+# 
+# My API Key: gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ
+# 
+# ```{r}
+# my_api_key <- "gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ"
+# ```
+# 
+# 
+# First endpoint fetches details for one food item by FDC ID
+# 
+# ```{r}
+# URL_friedrice <- "https://api.nal.usda.gov/fdc/v1/food/36602?api_key=DEMO_KEY"
+# ```
+# 
+# 
+# ```{r}
+# friedrice_info <- GET(URL_friedrice)
+# str(friedrice_info, max.level = 1)
+# ```
+# 
+# ## Need to parse this a bit. 
+# 
+# 
+# ```{r}
+# GET("https://api.nal.usda.gov/fdc/v1/foods/list?api_key=gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ")
+# ```
+# ```{r}
+# myData <- GET("https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&query=Cheddar%20Cheese")
+# ```
+# 
+# ```{r}
+# # parsed <- fromJSON(rawToChar(id_info$content)) 
+# # team_info <- as_tibble(parsed$data) 
+# # team_info
+# ```
+# 
+# 
+# ```{r}
+# parsed <- myData$content |>
+#   rawToChar() |>
+#   fromJSON()
+# str(parsed, max.level = 1)
+# ```
+# 
+# ```{r}
+# parsed$foods |>
+# as_tibble()
+# ```
+# 
+# ```{r}
+# get_foods <- function(title, time, key){
+#   URL <- paste("https://newsapi.org/v2/everything?q=",
+#   title,
+#   "&from=",
+#   time,
+#   "&language=en&apiKey=",
+#   key,
+#   sep = "")
+#   GET(URL)$content |>
+#   rawToChar() |>
+#   fromJSON() |>
+#   pluck("articles") |>
+#   as_tibble()
+# }
 ```
 
