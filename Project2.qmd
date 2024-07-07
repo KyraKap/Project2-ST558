@@ -5,7 +5,6 @@ format: html
 editor: visual
 ---
 
-
 ```{r}
 library(httr)
 library(jsonlite)
@@ -23,11 +22,6 @@ URL_base <- "https://api.sunrise-sunset.org/json"
 ```
 
 ```{r}
-base_info <- GET(URL_base)
-str(base_info, max.level = 1)
-```
-
-```{r}
 URL_example <- "https://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400"
 ```
 
@@ -42,96 +36,39 @@ ex_info <- as_tibble(parsed$results)
 ex_info
 ```
 
+
 ```{r}
-parsed$times |>
+
+# Example function
+
+get_sunrise_sunset <- function(latitude, longitude, date){
+  URL <- paste("https://api.sunrise-sunset.org/json",
+    "?lat=",
+    # in decimal degrees
+    latitude,
+    "&lng=",
+    # in decimal degrees
+    longitude,
+    "&date=",
+    # Date in YYYY-MM-DD format
+    date,
+    sep = "")
+  myData <- GET(URL)
+  parsed <- myData$content |>
+    rawToChar() |>
+    fromJSON()
+  str(parsed, max.level = 1)
+  parsed$results |>
   as_tibble()
+}
+```
+
+```{r}
+URL
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-# ```{r}
-# # simplifying the code above
-# packages_needed <- c("httr", "jsonlite", "tidyr", "shinydashboard", "DT", "shiny", "caret", "dplyr", "ggplot2")
-# 
-# #library...
-# ```
-# 
-# 
-# 
-# # Using the FOODS API from the .gov database
-# ## This API has 4 different endpoints. I need to build a URL for each endpoint
-# 
-# My API Key: gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ
-# 
-# ```{r}
-# my_api_key <- "gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ"
-# ```
-# 
-# 
-# First endpoint fetches details for one food item by FDC ID
-# 
-# ```{r}
-# URL_friedrice <- "https://api.nal.usda.gov/fdc/v1/food/36602?api_key=DEMO_KEY"
-# ```
-# 
-# 
-# ```{r}
-# friedrice_info <- GET(URL_friedrice)
-# str(friedrice_info, max.level = 1)
-# ```
-# 
-# ## Need to parse this a bit. 
-# 
-# 
-# ```{r}
-# GET("https://api.nal.usda.gov/fdc/v1/foods/list?api_key=gRRFVxFCr5iNxkKTElVjMgYyvsonZELMmQP7feiJ")
-# ```
-# ```{r}
-# myData <- GET("https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&query=Cheddar%20Cheese")
-# ```
-# 
-# ```{r}
-# # parsed <- fromJSON(rawToChar(id_info$content)) 
-# # team_info <- as_tibble(parsed$data) 
-# # team_info
-# ```
-# 
-# 
-# ```{r}
-# parsed <- myData$content |>
-#   rawToChar() |>
-#   fromJSON()
-# str(parsed, max.level = 1)
-# ```
-# 
-# ```{r}
-# parsed$foods |>
-# as_tibble()
-# ```
-# 
-# ```{r}
-# get_foods <- function(title, time, key){
-#   URL <- paste("https://newsapi.org/v2/everything?q=",
-#   title,
-#   "&from=",
-#   time,
-#   "&language=en&apiKey=",
-#   key,
-#   sep = "")
-#   GET(URL)$content |>
-#   rawToChar() |>
-#   fromJSON() |>
-#   pluck("articles") |>
-#   as_tibble()
-# }
+```{r}
+get_sunrise_sunset(35.913200, -79.055847, 2024-07-07)
 ```
 
