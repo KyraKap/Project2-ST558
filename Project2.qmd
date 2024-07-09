@@ -62,22 +62,20 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
   if (!is.null(callback)) {
       url <- paste0(url, "&callback=", callback)
   }
-  
+
+# Print the constructed URL for debugging
+  print(url)
   
 # creating an object for the response to the API call
   response <- GET(url)
   
-# Checking for a successful request
-  if (http_status(response)$category != "Success") {
-    stop("API request failed")
-  }  
 
 # Parsing the response content from JSON
   content_text <- content(response, "text", encoding = "UTF-8")
   parsed <- fromJSON(content_text)
   
 # Checking the structure of the parsed data
-  str(parsed, max.level = 1)
+  str(parsed)
   
 # creating a tibble
   my_requested_data <- as_tibble(parsed$results)
@@ -106,9 +104,9 @@ chapel_hill_data
 
 
 ```{r}
-StartDate<-"2024-01-01"
-EndDate<- "2024-12-31"
-dates <- seq(ymd(StartDate), ymd(EndDate), by = "days")
+StartDate<-as.Date("2024-01-01")
+EndDate<- as.Date("2024-12-31")
+dates <- seq(StartDate, EndDate, by = "days")
 
 print(head(dates))
 ```
@@ -123,46 +121,26 @@ capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a84
 capital_cities 
 ```
 
-
-
 ```{r}
-chapel_hill_plot <- ggplot(chapel_hill_data, aes(sunset, sunrise)) + geom_point()
-```
-
-```{r}
-chapel_hill_plot
+help(format)
 ```
 
 
-# Shiny App
-
 ```{r}
-shinyUI(fluidPage(
-  
-  # Application title
-  uiOutput("Finding the time of Sunrise and Sunset"),
-  
-  # Sidebar with options for the data set
-  sidebarLayout(
-    sidebarPanel(
-      h3("Select the mammal's biological order:"),
-      selectizeInput("vore", "Vore", selected = "omni", choices = levels(as.factor(msleep$vore))),
-      br(),
-      sliderInput("size", "Size of Points on Graph",
-                  min = 1, max = 10, value = 5, step = 1),
-      checkboxInput("conservation", h4("Color Code Conservation Status", style = "color:red;")),
-      conditionalPanel("input.conservation", checkboxInput("alpha", h5("Also change symbol based on REM sleep?")))
-    ),
-    
-    # Show outputs
-    mainPanel(
-      plotOutput("sleepPlot"),
-      textOutput("info"),
-      tableOutput("table")
-      )
-  )
-))
+for (i in dates) {
+  formatted_date <- format(i, "%Y%-%m-%d")
+  for (j in 1:nrow(capital_cities)) {
+    lat <- capital_cities$Latitude[j]
+    lon <- capital_cities$Longitude[j]
+    result <- sunrise_sunset_query(lat, lon, formatted_date, "America/New_York")
+    print(result)
+  }
+} 
 ```
+
+
+
+
 
 ```{r}
 # Run the Shiny app
