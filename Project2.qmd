@@ -5,9 +5,6 @@ format: html
 editor: visual
 ---
 
-
-
-
 ```{r}
 library(httr)
 library(jsonlite)
@@ -19,6 +16,77 @@ library(caret)
 library(dplyr)
 library(ggplot2)
 ```
+
+```{r}
+
+# Querying the API
+
+sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback, format){
+
+# using the unchanging part of the url as the base
+  
+  base_URL <- "https://api.sunrise-sunset.org"
+  
+# to create 'url' object we need to combine all the parts  
+  
+  url <- paste0(base_URL,
+    
+    "/json?lat=",
+    
+# in decimal degrees
+    
+    latitude,
+    
+    "&lng=",
+    
+# in decimal degrees
+    
+    longitude,
+    
+    "&date=",
+    
+# Date in YYYY-MM-DD format
+    
+    date,
+
+    "&tzid=",
+
+# Specified Time Zone that you can find here https://www.php.net/manual/en/timezones.php
+
+    tzid,
+
+    "&callback=",
+
+# CALLBACK - Any valid JavaScript method name can be used as the callback value.  The complete JSON API response will be wrapped in the callback function requested.
+
+    callback,
+
+    "&formatted=",
+
+# 0 or 1, 1 is default, for the standard of time (ISO 8601)
+
+    format,
+
+    sep = "")
+  
+  response <- GET(url, query = params)
+  parsed <- myData$content |>
+    rawToChar() |>
+    fromJSON()
+  str(parsed, max.level = 1)
+  parsed$results |>
+  as_tibble()
+}
+
+
+```
+
+
+```{r}
+help(GET)
+```
+
+------------------------------------------------------------------------
 
 ```{r}
 URL_base <- "https://api.sunrise-sunset.org/json"
@@ -51,49 +119,46 @@ for (f in as.list(dates)){
 }
 ```
 
-
 ```{r}
 
 # Example function
 
-get_sunrise_sunset <- function(latitude, longitude, date, tzid){
-  URL <- paste("https://api.sunrise-sunset.org/json",
-    "?lat=",
-    # in decimal degrees
-    latitude,
-    "&lng=",
-    # in decimal degrees
-    longitude,
-    "&date=",
-    # Date in YYYY-MM-DD format
-    date,
-    "&tzid=",
-    # Specified Time Zone that you can find here https://www.php.net/manual/en/timezones.php
-    tzid,
-    sep = "")
-  myData <- GET(URL)
-  parsed <- myData$content |>
-    rawToChar() |>
-    fromJSON()
-  str(parsed, max.level = 1)
-  parsed$results |>
-  as_tibble()
-}
+# get_sunrise_sunset <- function(latitude, longitude, date, tzid){
+#   URL <- paste("https://api.sunrise-sunset.org/json",
+#     "?lat=",
+#     # in decimal degrees
+#     latitude,
+#     "&lng=",
+#     # in decimal degrees
+#     longitude,
+#     "&date=",
+#     # Date in YYYY-MM-DD format
+#     date,
+#     "&tzid=",
+#     # Specified Time Zone that you can find here https://www.php.net/manual/en/timezones.php
+#     tzid,
+#     sep = "")
+#   myData <- GET(URL)
+#   parsed <- myData$content |>
+#     rawToChar() |>
+#     fromJSON()
+#   str(parsed, max.level = 1)
+#   parsed$results |>
+#   as_tibble()
+# }
 ```
 
 ```{r}
 URL
 ```
 
-
 ```{r}
 chapel_hill_data <- get_sunrise_sunset(35.913200, -79.055847, 2024-07-07, "America/New_York")
 ```
+
 ```{r}
 chapel_hill_data
 ```
-
-
 
 ```{r}
 Paris <- get_sunrise_sunset(48.864716, 2.349014, 2024-07-07)
@@ -110,14 +175,14 @@ Moscow
 Lisbon
 
 ```
+
 ```{r}
 Paris
 ```
 
-
-
-
-
+```{r}
+chapel_hill_plot <- ggplot(chapel_hill_data, aes(day_length, sunrise)) + geom_point()
+```
 
 # Shiny App
 
@@ -149,9 +214,7 @@ shinyUI(fluidPage(
 ))
 ```
 
-
 ```{r}
 # Run the Shiny app
 shinyApp(ui, server)
 ```
-
