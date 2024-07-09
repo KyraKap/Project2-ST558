@@ -15,174 +15,124 @@ library(shiny)
 library(caret)
 library(dplyr)
 library(ggplot2)
+library(lubridate)
 ```
+
+
 
 ```{r}
 
-# Querying the API
+# Querying the API - including 6 parameters
 
-sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback, format){
+sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL, format=1){
 
 # using the unchanging part of the url as the base
+  base_URL <- "https://api.sunrise-sunset.org/json"
   
-  base_URL <- "https://api.sunrise-sunset.org"
-  
-# to create 'url' object we need to combine all the parts  
+# to create 'url' object we need to combine all the parts 
   
   url <- paste0(base_URL,
-    
-    "/json?lat=",
-    
-# in decimal degrees
-    
-    latitude,
-    
-    "&lng=",
-    
-# in decimal degrees
-    
-    longitude,
-    
-    "&date=",
-    
-# Date in YYYY-MM-DD format
-    
-    date,
-
-    "&tzid=",
-
-# Specified Time Zone that you can find here https://www.php.net/manual/en/timezones.php
-
-    tzid,
-
-    "&callback=",
-
-# CALLBACK - Any valid JavaScript method name can be used as the callback value.  The complete JSON API response will be wrapped in the callback function requested.
-
-    callback,
-
-    "&formatted=",
-
-# 0 or 1, 1 is default, for the standard of time (ISO 8601)
-
-    format,
-
-    sep = "")
+                
+        # in decimal degrees  
+        
+                "?lat=", latitude,
+        
+        # in decimal degrees
+        
+                "&lng=", longitude,
+        
+        # Date in YYYY-MM-DD format
+        
+                "&date=", date,
+        
+        # Specified Time Zone that you can find here         
+        # https://www.php.net/manual/en/timezones.php
+        
+                "&tzid=", tzid,
+        
+        # 0 or 1, 1 is default, for the standard of time (ISO 8601)
+        
+                "&formatted=", format)
   
-  response <- GET(url, query = params)
-  parsed <- myData$content |>
-    rawToChar() |>
-    fromJSON()
+        # CALLBACK - Optional. Any valid JavaScript method name can be used as the callback value.  
+        # The complete JSON API response will be wrapped in the callback function requested.
+  
+               # "&callback=", callback)
+
+  if (!is.null(callback)) {
+      url <- paste0(url, "&callback=", callback)
+  }
+  
+  
+# creating an object for the response to the API call
+  response <- GET(url)
+  
+# Checking for a successful request
+  if (http_status(response)$category != "Success") {
+    stop("API request failed")
+  }  
+
+# Parsing the response content from JSON
+  content_text <- content(response, "text", encoding = "UTF-8")
+  parsed <- fromJSON(content_text)
+  
+# Checking the structure of the parsed data
   str(parsed, max.level = 1)
-  parsed$results |>
-  as_tibble()
+  
+# creating a tibble
+  my_requested_data <- as_tibble(parsed$results)
+  
+  return(my_requested_data)
 }
 
 
 ```
 
-
 ```{r}
-help(GET)
+# testing out the querying function
+
+sunrise_sunset_query(35.913200, -79.055847, 2024-07-07, "America/New_York")
 ```
-
-------------------------------------------------------------------------
-
-```{r}
-URL_base <- "https://api.sunrise-sunset.org/json"
-```
-
-```{r}
-URL_example <- "https://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400"
-```
-
-```{r}
-example_info <- GET(URL_example)
-str(example_info, max.level = 1)
-```
-
-```{r}
-parsed <- fromJSON(rawToChar(example_info$content)) 
-ex_info <- as_tibble(parsed$results) 
-ex_info
-```
-
-```{r}
-StartDate<-"2024-01-01"
-EndDate<- "2024-12-31"
-dates<-seq(as.POSIXct(StartDate, format="%Y-%m-%d"), as.POSIXct(EndDate, format="%Y-%m-%d"), by='days')
-```
-
-```{r}
-for (f in as.list(dates)){
- print(str(f))
-}
-```
-
 ```{r}
 
-# Example function
-
-# get_sunrise_sunset <- function(latitude, longitude, date, tzid){
-#   URL <- paste("https://api.sunrise-sunset.org/json",
-#     "?lat=",
-#     # in decimal degrees
-#     latitude,
-#     "&lng=",
-#     # in decimal degrees
-#     longitude,
-#     "&date=",
-#     # Date in YYYY-MM-DD format
-#     date,
-#     "&tzid=",
-#     # Specified Time Zone that you can find here https://www.php.net/manual/en/timezones.php
-#     tzid,
-#     sep = "")
-#   myData <- GET(URL)
-#   parsed <- myData$content |>
-#     rawToChar() |>
-#     fromJSON()
-#   str(parsed, max.level = 1)
-#   parsed$results |>
-#   as_tibble()
-# }
-```
-
-```{r}
-URL
-```
-
-```{r}
-chapel_hill_data <- get_sunrise_sunset(35.913200, -79.055847, 2024-07-07, "America/New_York")
+chapel_hill_data <- sunrise_sunset_query(35.913200, -79.055847, 2024-07-07, "America/New_York")
 ```
 
 ```{r}
 chapel_hill_data
 ```
 
-```{r}
-Paris <- get_sunrise_sunset(48.864716, 2.349014, 2024-07-07)
-Athens
-Tokyo
-Oslo
-NYC
-BuenosAires
-Cairo
-NewDelhi
-Beijing
-Bangkok
-Moscow
-Lisbon
+------------------------------------------------------------------------
 
+
+```{r}
+StartDate<-"2024-01-01"
+EndDate<- "2024-12-31"
+dates <- seq(ymd(StartDate), ymd(EndDate), by = "days")
+
+print(head(dates))
+```
+
+
+```{r}
+capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
+```
+
+
+```{r}
+capital_cities 
+```
+
+
+
+```{r}
+chapel_hill_plot <- ggplot(chapel_hill_data, aes(sunset, sunrise)) + geom_point()
 ```
 
 ```{r}
-Paris
+chapel_hill_plot
 ```
 
-```{r}
-chapel_hill_plot <- ggplot(chapel_hill_data, aes(day_length, sunrise)) + geom_point()
-```
 
 # Shiny App
 
