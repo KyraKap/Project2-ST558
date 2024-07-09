@@ -4,30 +4,32 @@ ui <- fluidPage(
   
   # top of page - title
   
-  navbarPage("Finding the time of Sunrise and Sunset", id = NULL, selected= NULL, position= "static-top", fluid=TRUE),
+  navbarPage("Finding the time of Sunrise and Sunset", id = NULL, selected= NULL, position= "static-top", fluid=TRUE,
 
     sidebarLayout(
       
-      sidebarPanel(("hello"),
+      sidebarPanel("hello",
                    sliderInput("bins", "Number of bins:", min=1, max=50, 
                                value=30),
                    textInput("capital_plot", "My Capitals Plot:", value="Histogram")
       ),
-    ),
       
-      mainPanel("hello"),
+      mainPanel("hello", width=5)
+      
+    ),
   
       
-      tabsetPanel(
+    tabsetPanel(
       
       # tab 1 - name of the tab and what it says on the tab
       
-        tabPanel("About", "contents"),
+      tabPanel("About", "contents"),
       
       # attempting to put plot here
       
-        tabPanel("Data Download"),
-        tabPanel("Data Exploration", "contents"),
-      )
-
+      tabPanel("Data Download"),
+      tabPanel("Data Exploration", "contents")
+    )
+  )
+)
 
