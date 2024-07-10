@@ -214,9 +214,14 @@ cols_to_reformat <- c("sunrise", "sunset", "solar_noon","civil_twilight_begin", 
 
 
 ```{r}
-my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x) format(strptime(x, "%I:%M:%S %p"), "%H:%M:%S"))
+my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x) 
+  chron::times(format(strptime(x, "%I:%M:%S %p"), "%H:%M:%S"))
+  )
 ```
 
+```{r}
+str(my_subset)
+```
 
 
 
