@@ -16,8 +16,8 @@ library(caret)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
-```
 
+```
 
 
 ```{r}
@@ -59,12 +59,9 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
   
                # "&callback=", callback)
 
-  if (!is.null(callback)) {
-      url <- paste0(url, "&callback=", callback)
-  }
-
-# Print the constructed URL for debugging
-  print(url)
+  # if (!is.null(callback)) {
+  #     url <- paste0(url, "&callback=", callback)
+  # }
   
 # creating an object for the response to the API call
   response <- GET(url)
@@ -86,57 +83,110 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
 
 ```
 
-```{r}
-# testing out the querying function
-
-sunrise_sunset_query(35.913200, -79.055847, 2024-07-07, "America/New_York")
-```
-```{r}
-
-chapel_hill_data <- sunrise_sunset_query(35.913200, -79.055847, 2024-07-07, "America/New_York")
-```
-
-```{r}
-chapel_hill_data
-```
-
 ------------------------------------------------------------------------
-
-
-```{r}
-StartDate<-as.Date("2024-01-01")
-EndDate<- as.Date("2024-12-31")
-dates <- seq(StartDate, EndDate, by = "days")
-
-print(head(dates))
-```
-
 
 ```{r}
 capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
 ```
 
 
+
 ```{r}
-capital_cities 
+# StartDate <- as.Date("2024-01-01")
+# EndDate <- as.Date("2024-12-31")  
+# dates <- seq(StartDate, EndDate, by = "months")
+# formatted_dates <- format(dates, "%Y-%m-%d")
+
+formatted_dates <- as.Date("2024-01-01")
 ```
 
 ```{r}
-help(format)
+result_list <- list()
 ```
 
 
 ```{r}
-for (i in dates) {
-  formatted_date <- format(i, "%Y%-%m-%d")
-  for (j in 1:nrow(capital_cities)) {
-    lat <- capital_cities$Latitude[j]
-    lon <- capital_cities$Longitude[j]
-    result <- sunrise_sunset_query(lat, lon, formatted_date, "America/New_York")
-    print(result)
+
+for (i in 1:nrow(capital_cities)) {
+  for (j in 1:length(formatted_dates)) {
+    lat <- capital_cities$Latitude[i]
+    lon <- capital_cities$Longitude[i]
+    date <- formatted_dates[j]
+    result <- sunrise_sunset_query(lat, lon, date, "America/New_York")
+    # Add city and date information to result
+    result$City <- capital_cities$City[i]
+    result$Date <- date
+    
+   # Append result to the list
+    result_list <- append(result_list, list(result))
   }
-} 
+}
 ```
+
+```{r}
+# Combine all results into one data frame
+combined_results <- bind_rows(result_list)
+```
+
+```{r}
+print(combined_results)
+```
+
+
+
+```{r}
+combined_cities_data <- bind_rows(combined_results)
+```
+
+```{r}
+print(combined_cities_data)
+```
+
+
+```{r}
+my_subset <- cross_join(capital_cities, combined_results)
+```
+
+```{r}
+print(my_subset)
+```
+```{r}
+# Identify duplicates based on all columns
+# duplicates <- your_data[duplicated(your_data), ]
+
+# View the duplicates
+# print(duplicates)
+```
+
+
+
+```{r}
+help("pivot_wider")
+```
+
+
+```{r}
+my_final_subset <- my_subset |>
+  pivot_wider(names_expand = "Date")
+```
+
+
+
+
+
+
+```{r}
+# for (a in capital_cities) {
+#   for (l in formatted_dates) {
+#     my_subset <- sunrise_sunset_query(capital_cities$Latitude, capital_cities$Longitude, formatted_dates[l], "America/New_York")
+#     print(my_subset)
+#   }
+# }
+```
+
+
+
+
 
 
 
