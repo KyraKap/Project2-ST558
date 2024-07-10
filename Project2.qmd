@@ -78,11 +78,19 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
   
 # creating a tibble
   my_requested_data <- as_tibble(parsed$results)
+  my_requested_data$date <- as.Date(date)
+  my_requested_data$latitude <- latitude
+  my_requested_data$longitude <- longitude
   
   return(my_requested_data)
 }
 
 
+```
+
+
+```{r}
+chapel_hill_data <- sunrise_sunset_query(35.913200, -79.055847, "2024-07-10", "America/New_York")
 ```
 
 ------------------------------------------------------------------------
@@ -176,6 +184,11 @@ combined_results <- bind_rows(result_list)
 combined_cities_data <- bind_rows(combined_results, capital_cities)
 ```
 
+
+```{r}
+combined_cities_data <- 
+```
+
 ```{r}
 print(combined_cities_data)
 ```
@@ -192,11 +205,11 @@ print(combined_cities_data)
 ```{r}
 #OK SO WHY AM I GETTING SO MANY ROWS PER CITY
 
- my_subset <- cross_join(capital_cities, combined_results)
+# my_subset <- cross_join(capital_cities, combined_results)
 
 # cross join and full join both don't work? 
 
-# my_subset <- full_join(capital_cities, combined_results)
+ my_subset <- full_join(capital_cities, combined_results)
 ```
 
 ```{r}
