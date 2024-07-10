@@ -6,6 +6,8 @@ editor: visual
 ---
 
 ```{r}
+# my packages
+
 library(httr)
 library(jsonlite)
 library(tidyr)
@@ -86,65 +88,115 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
 ------------------------------------------------------------------------
 
 ```{r}
+# READING IN THIS RANDOM DATA FROM THE INTERNET THAT HAS SOME USEFUL INFO FOR MY PURPOSES
+# LIST OF EACH CAPITAL CITY IN THE WORLD AND THEIR LATITUDE AND LONGITUDE
+
 capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
 ```
 
 
-
 ```{r}
+# COMMENTING THIS OUT BECAUSE I WAS TRYING TO QUERY THE FIRST DAY OF EACH MONTH BUT IT WAS TAKING WAY WAYYY TOO LONG TO RUN. TOO MANY OBSERVATIONS.
+
 # StartDate <- as.Date("2024-01-01")
-# EndDate <- as.Date("2024-12-31")  
+# EndDate <- as.Date("2024-12-31")
 # dates <- seq(StartDate, EndDate, by = "months")
 # formatted_dates <- format(dates, "%Y-%m-%d")
 
-formatted_dates <- as.Date("2024-01-01")
+# SO I CHANGED IT TO JUST ONE DAY SO THAT I CAN ACTUALLY GET SOME DATA
+
+day_of_choice <- as.Date("2024-01-01")
 ```
 
 ```{r}
-result_list <- list()
+# CREATING AN EMPTY LIST? tibble? experimented with each. 
+
+result_list <- tibble()
 ```
 
-
 ```{r}
+# THIS PRODUCES A LIST OF TIBBLES FOR EACH CITY (FROM THE API DATA) BUT DOESN'T INCLUDE THE CITY NAME AND LAT/LON THAT WAS USED TO GET THE DATA INSIDE THE TIBBLES
 
 for (i in 1:nrow(capital_cities)) {
-  for (j in 1:length(formatted_dates)) {
     lat <- capital_cities$Latitude[i]
     lon <- capital_cities$Longitude[i]
-    date <- formatted_dates[j]
+    date <- day_of_choice
     result <- sunrise_sunset_query(lat, lon, date, "America/New_York")
-    # Add city and date information to result
-    result$City <- capital_cities$City[i]
-    result$Date <- date
-    
-   # Append result to the list
+  
+    #result$City <- capital_cities$City[i]
+    #result$Date <- date
+
     result_list <- append(result_list, list(result))
   }
-}
+
+```
+
+
+```{r}
+
+# MY OLD METHOD OF ITERATING OVER THE DATES AND CITIES - TOO MUCH DATA - REWROTE THIS ABOVE
+
+# for (i in 1:nrow(capital_cities)) {
+#   for (j in 1:length(formatted_dates)) {
+#     lat <- capital_cities$Latitude[i]
+#     lon <- capital_cities$Longitude[i]
+#     date <- formatted_dates[j]
+#     result <- sunrise_sunset_query(lat, lon, date, "America/New_York")
+#     # Add city and date information to result
+#     result$City <- capital_cities$City[i]
+#     result$Date <- date
+#     
+#    # Append result to the list
+#     result_list <- append(result_list, list(result))
+#   }
+# }
 ```
 
 ```{r}
-# Combine all results into one data frame
+# adding an id column to the result_list
+
+# result_list <- as.data.frame(result_list)
+
+# id <- list(1:363)
+
+# result_list <- result_list |>
+#                  mutate(id = if_else(result_list$names = i in 1:363), "1", "NA"),
+#                    .before=type)
+```
+
+
+```{r}
+# Combine the list of tibbles into one larger dataframe
 combined_results <- bind_rows(result_list)
 ```
 
-```{r}
-print(combined_results)
-```
-
-
 
 ```{r}
-combined_cities_data <- bind_rows(combined_results)
+# NOW ADD THE CITY NAMES? 
+combined_cities_data <- bind_rows(combined_results, capital_cities)
 ```
 
 ```{r}
 print(combined_cities_data)
 ```
 
+```{r}
+# ATTEMPTING TO ELIMINATE THE NA VALUES? HOW DO I DO THIS
+
+# nope, this removes all the data
+
+# dropped_and_combined <- drop_na(combined_cities_data)
+```
+
 
 ```{r}
-my_subset <- cross_join(capital_cities, combined_results)
+#OK SO WHY AM I GETTING SO MANY ROWS PER CITY
+
+ my_subset <- cross_join(capital_cities, combined_results)
+
+# cross join and full join both don't work? 
+
+# my_subset <- full_join(capital_cities, combined_results)
 ```
 
 ```{r}
@@ -161,28 +213,16 @@ print(my_subset)
 
 
 ```{r}
-help("pivot_wider")
+#help("group_by")
 ```
 
 
 ```{r}
-my_final_subset <- my_subset |>
-  pivot_wider(names_expand = "Date")
+# my_final_subset <- group_by(my_subset, Capital.City, Country, Latitude, Longitude, Population, Capital.Type)
 ```
 
 
 
-
-
-
-```{r}
-# for (a in capital_cities) {
-#   for (l in formatted_dates) {
-#     my_subset <- sunrise_sunset_query(capital_cities$Latitude, capital_cities$Longitude, formatted_dates[l], "America/New_York")
-#     print(my_subset)
-#   }
-# }
-```
 
 
 
