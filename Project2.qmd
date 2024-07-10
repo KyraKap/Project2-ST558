@@ -6,6 +6,11 @@ editor: visual
 ---
 
 ```{r}
+install.packages("chron")
+```
+
+
+```{r}
 # my packages
 
 library(httr)
@@ -18,7 +23,8 @@ library(caret)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
-
+library(lutz)
+library(chron)
 ```
 
 
@@ -93,6 +99,8 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
 chapel_hill_data <- sunrise_sunset_query(35.913200, -79.055847, "2024-07-10", "America/New_York")
 ```
 
+
+
 ------------------------------------------------------------------------
 
 ```{r}
@@ -100,6 +108,16 @@ chapel_hill_data <- sunrise_sunset_query(35.913200, -79.055847, "2024-07-10", "A
 # LIST OF EACH CAPITAL CITY IN THE WORLD AND THEIR LATITUDE AND LONGITUDE
 
 capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
+
+
+
+```
+
+```{r}
+capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
+```
+```{r}
+test_tz <- sunrise_sunset_query(capital_cities$Latitude[1], capital_cities$Longitude[1], "2024-07-10", capital_cities$tz[1])
 ```
 
 
@@ -116,20 +134,18 @@ capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a84
 day_of_choice <- as.Date("2024-01-01")
 ```
 
-```{r}
-# CREATING AN EMPTY LIST? tibble? experimented with each. 
-
-result_list <- tibble()
-```
 
 ```{r}
 # THIS PRODUCES A LIST OF TIBBLES FOR EACH CITY (FROM THE API DATA) BUT DOESN'T INCLUDE THE CITY NAME AND LAT/LON THAT WAS USED TO GET THE DATA INSIDE THE TIBBLES
+
+result_list <- tibble()
 
 for (i in 1:nrow(capital_cities)) {
     lat <- capital_cities$Latitude[i]
     lon <- capital_cities$Longitude[i]
     date <- day_of_choice
-    result <- sunrise_sunset_query(lat, lon, date, "America/New_York")
+    tz <- capital_cities$tz[i]
+    result <- sunrise_sunset_query(lat, lon, date, tz)
   
     #result$City <- capital_cities$City[i]
     #result$Date <- date
@@ -179,66 +195,27 @@ combined_results <- bind_rows(result_list)
 ```
 
 
-```{r}
-# NOW ADD THE CITY NAMES? 
-combined_cities_data <- bind_rows(combined_results, capital_cities)
-```
 
 
 ```{r}
-combined_cities_data <- 
-```
 
-```{r}
-print(combined_cities_data)
-```
+my_subset <- full_join(capital_cities, combined_results, by = join_by(Latitude==latitude, Longitude==longitude))
 
-```{r}
-# ATTEMPTING TO ELIMINATE THE NA VALUES? HOW DO I DO THIS
-
-# nope, this removes all the data
-
-# dropped_and_combined <- drop_na(combined_cities_data)
-```
-
-
-```{r}
-#OK SO WHY AM I GETTING SO MANY ROWS PER CITY
-
-# my_subset <- cross_join(capital_cities, combined_results)
-
-# cross join and full join both don't work? 
-
- my_subset <- full_join(capital_cities, combined_results)
 ```
 
 ```{r}
 print(my_subset)
-```
-```{r}
-# Identify duplicates based on all columns
-# duplicates <- your_data[duplicated(your_data), ]
 
-# View the duplicates
-# print(duplicates)
 ```
 
-
-
 ```{r}
-#help("group_by")
+cols_to_reformat <- c("sunrise", "sunset", "solar_noon","civil_twilight_begin",  "civil_twilight_end", "nautical_twilight_begin","nautical_twilight_end","astronomical_twilight_begin", "astronomical_twilight_end")
 ```
 
 
 ```{r}
-# my_final_subset <- group_by(my_subset, Capital.City, Country, Latitude, Longitude, Population, Capital.Type)
+my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x) format(strptime(x, "%I:%M:%S %p"), "%H:%M:%S"))
 ```
-
-
-
-
-
-
 
 
 
