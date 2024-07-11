@@ -67,6 +67,7 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
 
 api_query <- function(chosen_cities, chosen_date ){
   result_list <- tibble()
+  if (len(chosen_cities) <1) chosen_cities = capital_cities$Capital.City
   chosen_cities_tb <- capital_cities[capital_cities$Capital.City %in% chosen_cities,]
   for (i in 1:nrow(chosen_cities_tb)) {
     lat <- chosen_cities_tb$Latitude[i]

@@ -17,7 +17,7 @@ library(Hmisc)
 
 source("app_functions.R")
 
-# ex 2: UI Code with a plot
+
 #library(shiny)
 capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
 capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
@@ -37,19 +37,30 @@ ui <- fluidPage(
         capital_cities$Capital.City,
         multiple = TRUE
       ),
+      # allows users to customize API queries!
       dateInput("user_date","Select Date:", value="2024-01-01"),
       actionButton("query_api","Pull Data!")
     ),
     mainPanel(
       tabsetPanel(
         tabPanel("About",
+                 h3("Description of this App"),
+                 p("This api returns sunrise and sunset data when given latitude and longitude. 
+                 In this shiny app, you can go through the tabs and download your own csv file of data 
+                 you choose, select variables to appear in the plots, and also create a subset"),
+                 p("Data Source: https://sunrise-sunset.org/api"),
+                 img(src = "graph1x.png", height = "100px"),
+                 
                  verbatimTextOutput("api_data")),
         tabPanel("Download Data",
+                 # to allow users to select which variables they want to include in their download
                  selectInput("selected_vars","Please Select Desired Variables", 
-                             choices = names(output)),
+                             choices = names(my_dataset),multiple=TRUE),
                  textInput("data_file","Filename:",value="my_data"),
                  downloadButton("download_data","Download csv")),
-        tabPanel("Plot",
+                
+        
+        tabPanel("Data Exploration",
                  sliderInput(
                    "bins",
                    "Number of bins:",
@@ -59,19 +70,22 @@ ui <- fluidPage(
                  ),
                  textInput("plot_title", "Plot Title:", value = "Histogram"),
                  plotOutput("histPlot")
+                 # contingency tables based on user input
+                 # my_contingency_table <- table()
+                 # user_contingency_table <- reactive(table())
+                 
+                 #numerical summaries based on user input
+                 #my_summary <- summarize()
+                 #user_summary <- reactive(summarize())
+                 
+                 # four plots
+                 # scatterplot, histogram, line plot, popsicle plot
+                 
                  )
       )
     )
   )
 )
-
-
-
-
-
-
-
-
 
 
 
@@ -92,6 +106,13 @@ ui <- fluidPage(
       ggplot(my_subset, aes(x=sunrise)) +
         geom_histogram(bins=input$bins) +
         ggtitle(input$plot_title)
+     }) 
+      
+    #scatterplot
+    output$scatPlot <- renderPlot({
+      gplot(api_data,aes(x=as.POSIXct(strptime(sunrise,"%H:%M:%S")),y=as.POSIXct(strptime(sunset,"%H:%M:%S"))))+
+         geom_point()
+    })
       
       # Downloadable csv of selected dataset ----
       output$downloadData <- downloadHandler(
@@ -102,64 +123,10 @@ ui <- fluidPage(
           write.csv(datasetInput(), file, row.names = FALSE)
         }
       )
-    })
+    
   }
   
   shinyApp(ui, server)
   
   
-  # Scatter Plot
-  # gplot(my_subset,aes(x=as.POSIXct(strptime(sunrise,"%H:%M:%S")),y=as.POSIXct(strptime(sunset,"%H:%M:%S"))))+
-    # geom_point()
-  
-  # # top of page - title
-  #
-  # navbarPage("Finding the time of Sunrise and Sunset", id = NULL, selected= NULL, position= "static-top", fluid=TRUE,
-  #
-  #            sidebarLayout(
-  #
-  #              sidebarPanel("hello",
-  #
-  #                           h3("API Query"),
-  #                           selectInput(capital_cities$Capital.City, "Capital City", capital_cities$Capital.City),
-  #                           sliderInput("bins", "Number of bins:", min=1, max=50,
-  #                                       value=30),
-  #                           textInput("capital_plot", "My Capitals Plot:", value="Histogram")
-  #              ),
-  #
-  #              mainPanel("hello", width=5)
-  #
-  #           ),
-  #
-  #
-  #            tabsetPanel(
-  #
-  #              # tab 1 - name of the tab and what it says on the tab
-  #
-  #              tabPanel("About",
-  #                       # attempting to put plot here
-  #                       plotOutput("hist_plot")
-  #
-  #              ),
-  #
-  #
-  #
-  #              tabPanel("Data Download"
-  #              ),
-  #              tabPanel("Data Exploration", "contents")
-  #            )
-  # )
-  # )
-  
-  # shinyServer(function(input, output, session) {
-  #   output$chapel_hill_plot <- renderPlot(
-  #     #code that will return a plot
-  #   )
-  #
-  #   #histogram
-  #   output$hist_plot <- renderPlot({
-  #     hist(my_subset$sunrise, breaks = bins, col = 'darkgray', border = 'white', main = input$plot_title)
-  #
-  #   })
-  #
-  # })
+
