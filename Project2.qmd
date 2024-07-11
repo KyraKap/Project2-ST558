@@ -5,10 +5,6 @@ format: html
 editor: visual
 ---
 
-```{r}
-install.packages("chron")
-```
-
 
 ```{r}
 # my packages
@@ -136,6 +132,7 @@ day_of_choice <- as.Date("2024-01-01")
 
 
 ```{r}
+#| include: false
 # THIS PRODUCES A LIST OF TIBBLES FOR EACH CITY (FROM THE API DATA) BUT DOESN'T INCLUDE THE CITY NAME AND LAT/LON THAT WAS USED TO GET THE DATA INSIDE THE TIBBLES
 
 result_list <- tibble()
@@ -214,9 +211,15 @@ cols_to_reformat <- c("sunrise", "sunset", "solar_noon","civil_twilight_begin", 
 
 
 ```{r}
-my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x) 
-  chron::times(format(strptime(x, "%I:%M:%S %p"), "%H:%M:%S"))
-  )
+# my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x)
+#   chron::times(format(strptime(x, "%I:%M:%S %p"),format= "%H:%M:%S"))
+#   )
+
+my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x)
+  hms::as_hms(format(strptime(x, "%I:%M:%S %p"),format= "%H:%M:%S")) )
+
+
+my_subset$day_length=hms::as_hms(my_subset$day_length)
 ```
 
 ```{r}

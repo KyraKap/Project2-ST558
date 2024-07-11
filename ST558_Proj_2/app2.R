@@ -106,18 +106,18 @@ ui <- fluidPage(
       x <- my_subset$sunrise
       bins <- seq(min(x), max(x), length.out = input$bins + 1)
       
-      hist(
-        x,
-        breaks = bins,
-        col = 'darkgray',
-        border = 'white',
-        main = input$plot_title
-      )
+      ggplot(my_subset, aes(x=sunrise)) +
+        geom_histogram(bins=input$bins) +
+        ggtitle(input$plot_title)
     })
   }
   
   shinyApp(ui, server)
   
+  
+  # Scatter Plot
+  # gplot(my_subset,aes(x=as.POSIXct(strptime(sunrise,"%H:%M:%S")),y=as.POSIXct(strptime(sunset,"%H:%M:%S"))))+
+    # geom_point()
   
   # # top of page - title
   #
