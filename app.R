@@ -26,7 +26,7 @@ my_dataset <- api_query(c("London"), "2024-02-15")
 
 
 ui <- fluidPage(
-  titlePanel("Kyra's Sunrise App"),
+  titlePanel("Kyra's API Query App!"),
   
   sidebarLayout(
     sidebarPanel(
