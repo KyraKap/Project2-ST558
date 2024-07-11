@@ -19,7 +19,7 @@ source("app_functions.R")
 
 
 
-my_dataset <- api_query(c("London"), "2024-02-15")
+#my_dataset <- api_query(c("London"), "2024-02-15")
 
 ui <- fluidPage(
  

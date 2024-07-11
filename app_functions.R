@@ -77,7 +77,7 @@ api_query <- function(chosen_cities, chosen_date ){
   for (i in 1:nrow(chosen_cities_tb)) {
     lat <- chosen_cities_tb$Latitude[i]
     lon <- chosen_cities_tb$Longitude[i]
-    date <- day_of_choice
+    date <- date
     tz <- chosen_cities_tb$tz[i]
     result <- sunrise_sunset_query(lat, lon, chosen_date, tz)
     
