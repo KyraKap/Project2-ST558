@@ -22,6 +22,9 @@ source("app_functions.R")
 capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
 capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
 
+my_dataset <- api_query(c("London"), "2024-02-15")
+
+
 ui <- fluidPage(
   titlePanel("Kyra's Sunrise App"),
   
@@ -34,13 +37,18 @@ ui <- fluidPage(
         capital_cities$Capital.City,
         multiple = TRUE
       ),
-      dateInput("user_date","Select Date",format = "YYYY-MM-DD"),
+      dateInput("user_date","Select Date:", value="2024-01-01"),
       actionButton("query_api","Pull Data!")
     ),
     mainPanel(
       tabsetPanel(
-        tabPanel("About"),
-        tabPanel("Download Data"),
+        tabPanel("About",
+                 verbatimTextOutput("api_data")),
+        tabPanel("Download Data",
+                 selectInput("selected_vars","Please Select Desired Variables", 
+                             choices = names(output)),
+                 textInput("data_file","Filename:",value="my_data"),
+                 downloadButton("download_data","Download csv")),
         tabPanel("Plot",
                  sliderInput(
                    "bins",
@@ -67,67 +75,33 @@ ui <- fluidPage(
 
 
 
-
-
-
-
-# 
-# ui2 <- fluidPage(titlePanel(h3("Kyra's Sunrise App"), ), sidebarLayout(
-#   sidebarPanel(
-#     "hello",
-#     
-#     h3("API Query"),
-#     selectInput(
-#       "chosen_cities",
-#       "Choose cities to plot, select and backspace to remove",
-#       paste0(capital_cities$Capital.City, " (", capital_cities$Country, ")"),
-#       multiple = TRUE
-#     ),
-#     #dateInput("chosen_Date", "Choose a date", paste0(capital_cities$Capital.City, " (", capital_cities$Country,")"), multiple=TRUE)
-#   ),
-#   
-#   mainPanel(# Panel of TABS
-#     
-#     tabsetPanel(
-#       h3("Tabs for querying the API"),
-#       
-#       # tab 1
-#       
-#       tabPanel(h3("About"), # include necessary info here), # tab 2),
-#                tabPanel(h3("Data Download"), "create button here for download csv", ),
-#                # tab 3
-#                tabPanel(
-#                  h3("Data Exploration"),
-#                  "place plots here that are interactive?",
-#                  plotOutput("hist_plot"),
-#                  sliderInput(
-#                    "bins",
-#                    "Number of bins:",
-#                    min = 1,
-#                    max = 20,
-#                    value = 10
-#                  ),
-#                  textInput("plot_title", "Plot Title:", value = "Histogram")
-#                ),
-#                
-#       )
-#     )
-#     
-#     
-#   )
-# )
-  
-  
-
   # ex 2: Server Code with a plot
   server <- function(input, output, session) {
+    #query api
+    api_data <- eventReactive(input$query_api, {
+      cities <- reactive({input$chosen_cities})
+      api_query(chosen_cities = cities,chosen_date = user_date)
+    }
+    )
+    
+    #histogram
     output$histPlot <- renderPlot({
-      x <- my_subset$sunrise
+      x <- api_data$sunrise
       bins <- seq(min(x), max(x), length.out = input$bins + 1)
       
       ggplot(my_subset, aes(x=sunrise)) +
         geom_histogram(bins=input$bins) +
         ggtitle(input$plot_title)
+      
+      # Downloadable csv of selected dataset ----
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          paste(input$data_file, ".csv", sep = "")
+        },
+        content = function(file) {
+          write.csv(datasetInput(), file, row.names = FALSE)
+        }
+      )
     })
   }
   
