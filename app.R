@@ -18,14 +18,15 @@ library(Hmisc)
 source("app_functions.R")
 
 
-#library(shiny)
-capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
-capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
+#capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
+#capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
 
-my_dataset <- api_query(c("London"), "2024-02-15")
 
 
 ui <- fluidPage(
+  capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv"),
+  capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude),
+  
   titlePanel("Kyra's API Query App!"),
   
   sidebarLayout(
@@ -33,7 +34,7 @@ ui <- fluidPage(
       h3("API Query"),
       selectInput(
         "chosen_cities",
-        "Choose cities to plot, select and backspace to remove",
+        "Choose cities to plot, and click backspace to remove",
         capital_cities$Capital.City,
         multiple = TRUE
       ),
