@@ -90,6 +90,9 @@ ui <- fluidPage(
 
   # ex 2: Server Code with a plot
   server <- function(input, output, session) {
+    
+    capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
+    capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
     #query api
     api_data <- eventReactive(input$query_api, {
       cities <- reactive({input$chosen_cities})
