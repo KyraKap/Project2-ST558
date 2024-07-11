@@ -223,6 +223,10 @@ my_subset[,cols_to_reformat] <- lapply(my_subset[,cols_to_reformat], function(x)
 str(my_subset)
 ```
 
+```{r}
+help(textInput)
+
+```
 
 
 
