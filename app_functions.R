@@ -2,6 +2,8 @@
 
 # Querying the API - including 6 parameters
 
+
+
 sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL, format=1){
   
   # using the unchanging part of the url as the base
@@ -66,6 +68,9 @@ sunrise_sunset_query <- function(latitude, longitude, date, tzid, callback=NULL,
 
 
 api_query <- function(chosen_cities, chosen_date ){
+  capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
+  capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
+  
   result_list <- tibble()
   if (length(chosen_cities) <1) chosen_cities = capital_cities$Capital.City
   chosen_cities_tb <- capital_cities[capital_cities$Capital.City %in% chosen_cities,]

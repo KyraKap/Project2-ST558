@@ -40,4 +40,4 @@
 
 ### To run this app, use this code!!
 
-`shiny::runGitHub("KyraKap/app.R")`
+`shiny::runGitHub("KyraKap/Project2-ST558")`
