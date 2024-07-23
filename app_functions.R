@@ -107,4 +107,12 @@ api_query <- function(chosen_cities, chosen_date ){
 
   }
 
+capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
 
+#ran these two lines to get the base data and output that to a file
+#my_data <- api_query(chosen_cities = NULL, chosen_date = "2020-01-01")
+#write.csv(my_data, "base_data.csv", row.names = FALSE)
+
+#read in that file so you have the data available
+my_dataset <- readr::read_csv("base_data.csv")
+#I'm not sure that this is needed other than for the columnnames you use
