@@ -47,14 +47,21 @@ ui <- fluidPage(
                  p("This api returns sunrise and sunset data when given latitude and longitude. 
                  In this shiny app, you can go through the tabs and download your own csv file of data 
                  you choose, select variables to appear in the plots, and also create a subset"),
-                 p("Data Source: https://sunrise-sunset.org/api"),
+                 p("Data Source: "),
+                 a(href = "https://sunrise-sunset.org/api", "https://sunrise-sunset.org/api"),
+                 br(),
+                 #nonsense image added but you put it in a www folder to be able to access it easily
                  img(src = "graph1x.png", height = "100px"),
                  
                  verbatimTextOutput("api_data")),
         tabPanel("Download Data",
+                 #show the data
+                 DT::dataTableOutput("returned_data"),
                  # to allow users to select which variables they want to include in their download
                  selectInput("selected_vars","Please Select Desired Variables", 
-                             choices = names(my_dataset),multiple=TRUE),
+                             choices = names(my_dataset), multiple = TRUE),
+                 sliderInput("subset_pop", "Subset by Population", min = 0, max = max(my_dataset$Population),value = c(0, max(my_dataset$Population))),
+                 actionButton("update_data", "Update Displayed Data"),
                  textInput("data_file","Filename:",value="my_data"),
                  downloadButton("download_data","Download csv")),
                 
@@ -90,22 +97,31 @@ ui <- fluidPage(
 
   # ex 2: Server Code with a plot
   server <- function(input, output, session) {
-    
-    capital_cities <- read.csv("https://gist.githubusercontent.com/ofou/df09a6834a8421b4f376c875194915c9/raw/355eb56e164ddc3cd1a9467c524422cb674e71a9/country-capital-lat-long-population.csv")
+
     capital_cities$tz <- tz_lookup_coords(capital_cities$Latitude, capital_cities$Longitude)
+
+    api_data <- reactiveValues(returned = data.frame(), subsetted = data.frame())
     #query api
-    api_data <- eventReactive(input$query_api, {
-      cities <- reactive({input$chosen_cities})
-      api_query(chosen_cities = cities,chosen_date = user_date)
-    }
-    )
+    observeEvent(input$query_api, {
+      api_data$returned <- api_query(chosen_cities = input$chosen_cities, chosen_date = input$user_date)
+      api_data$subsetted <- api_data$returned
+    })
     
+    observeEvent(input$update_data, {
+      api_data$subsetted <- api_data$returned |>
+        dplyr::filter(Population > input$subset_pop[1], 
+               Population < input$subset_pop[2]) |>
+        dplyr::select(input$selected_vars)
+    })
+    
+    output$returned_data <- DT::renderDataTable({
+      api_data$subsetted
+    })
     #histogram
     output$histPlot <- renderPlot({
-      x <- api_data$sunrise
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      ggplot(my_subset, aes(x=sunrise)) +
+      api_to_plot <- api_data$returned
+
+      ggplot(api_to_plot, aes(x=sunrise)) +
         geom_histogram(bins=input$bins) +
         ggtitle(input$plot_title)
      }) 
